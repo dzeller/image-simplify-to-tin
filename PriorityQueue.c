@@ -77,14 +77,16 @@ void resizeQueue(PriorityQueue* p)
   p->arraySize = 2*p->size + 1;
 }
 
-Node* removeTop(PriorityQueue* p)
+void* removeTop(PriorityQueue* p)
 {
   if(p->size == 0) return NULL;
   Node* top = p->array[0];
   fillGap(p, 0);
   p->size--;
 
-  return top;
+  void* item = top->item;
+  free(top);
+  return item;
 }
 
 // Internal function, takes queue and index of a NULL Node and filters
@@ -228,36 +230,36 @@ void assertHeap(PriorityQueue* p)
 }
 
 // Tester
-int main(int argc, char** argv)
-{
-  PriorityQueue* p = makeQueue();
+/* int main(int argc, char** argv) */
+/* { */
+/*   PriorityQueue* p = makeQueue(); */
 
-  Node* n;
+/*   Node* n; */
 
-  printf("Building the queue\n");
-  for(int i=0; i<10; i++){
-    //n = makeNode(rand()%10000, (void*)0);
-    addItem(p, 10-i, n);
-    //insert(p, n);
-    assertHeap(p);
-  }
-  changePriority(p, 3, 3);
-  assertHeap(p);
-  changePriority(p, 3, 20);
-  assertHeap(p);
-  changePriority(p, 5, 17);
-  assertHeap(p);
-  changePriority(p, 1, 2);
-  assertHeap(p);
-  changePriority(p, 9, 2);
-  assertHeap(p);
-  changePriority(p, 8, 100);
-  assertHeap(p);
-  printQueuePriorities(p);
+/*   printf("Building the queue\n"); */
+/*   for(int i=0; i<10; i++){ */
+/*     //n = makeNode(rand()%10000, (void*)0); */
+/*     addItem(p, 10-i, n); */
+/*     //insert(p, n); */
+/*     assertHeap(p); */
+/*   } */
+/*   changePriority(p, 3, 3); */
+/*   assertHeap(p); */
+/*   changePriority(p, 3, 20); */
+/*   assertHeap(p); */
+/*   changePriority(p, 5, 17); */
+/*   assertHeap(p); */
+/*   changePriority(p, 1, 2); */
+/*   assertHeap(p); */
+/*   changePriority(p, 9, 2); */
+/*   assertHeap(p); */
+/*   changePriority(p, 8, 100); */
+/*   assertHeap(p); */
+/*   printQueuePriorities(p); */
 
-  while(removeTop(p) != NULL);
+/*   while(removeTop(p) != NULL); */
 
-  printf("Deleting the queue\n");
-  deleteQueue(p);
-  return 0;
-}
+/*   printf("Deleting the queue\n"); */
+/*   deleteQueue(p); */
+/*   return 0; */
+/* } */

@@ -27,4 +27,4 @@ void deleteQueue(PriorityQueue* p);
 
 void insert(PriorityQueue* p, Node* node);
 
-Node* removeTop(PriorityQueue* p);
+void* removeTop(PriorityQueue* p);

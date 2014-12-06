@@ -9,6 +9,7 @@
 #include <math.h>
 #include <assert.h>
 
+
 int triangleContains(Triangle* t, Vertex* point);
 
 Triangle* makeTriangle(int row1, int col1, int val1,
@@ -82,11 +83,6 @@ Triangle* makeTriangleFromVertices(Vertex* v1, Vertex* v2, Vertex* v3)
 /*     set(g, row3, col3, g->NODATA_value); */
 /* } */
 
-// TODO
-double linearlyInterpolate(Vertex* v1, Vertex* v2, Vertex* v3, int row, int col) {
-  return 0.0;
-}
-
 /* double computeErrorInitialConfig(TIN* tin, Grid* g, int row, int col) { */
 /*     Vertex v1; */
 /*     v1.row = 0; */
@@ -103,125 +99,39 @@ double linearlyInterpolate(Vertex* v1, Vertex* v2, Vertex* v3, int row, int col)
 /*     } */
 /*     v2.value = get(g, v2.row, v2.col); */
 
-/*     Vertex v3; */
-/*     v3.row = row - 1; */
-/*     v3.col = col - 1; */
-/*     v3.value = get(g, v3.row, v3.col); */
+double linearlyInterpolate(Vertex* a, Vertex* b, Vertex* c, int row, int col) 
+{
+    double abx = b->col - a->col;
+    double aby = b->row - a->row;
+    double abz = b->value - a->value;
 
-/*     double fromTin = linearlyInterpolate(&v1, &v2, &v3, row, col); */
-/*     return abs(fromTin - (double)get(g, row, col)); */
-/* } */
+    double acx = c->col - a->col;
+    double acy = c->row - a->row;
+    double acz = c->value - a->value;
 
-/* TIN* simplify(TIN* tin, Grid* g, double epsilon) { */
-/*     // Initialize TIN with 4 corner points */
-/*     Triangle* bottomLeft = (Triangle *) malloc(sizeof(Triangle)); */
-/*     initializeTriangle(bottomLeft, g, 0, 0, g.rows - 1, 0, g.rows - 1, g.cols - 1); */
+    double crossx = aby*acz - abz*acy;
+    double crossy = abz*acx - abx*acz;
+    double crossz = abx*acy - aby*acx;
+    double d = -(crossx*a->col + crossy*a->row + crossz*a->value);
 
-/*     Triangle* topRight = (Triangle *) malloc(sizeof(Triangle)); */
-/*     initializeTriangle(topRight, g, 0, 0, 0, g.cols - 1, g.rows - 1, g.cols - 1); */
-
-/*     bottomLeft->t1 = topRight; */
-/*     bottomLeft->t2 = NULL: */
-/*     bottomLeft->t3 = NULL: */
-
-/*     topRight->t1 = bottomLeft; */
-/*     topRight->t2 = NULL: */
-/*     topRight->t2 = NULL: */
-
-/*     tin->triangle = upperLeft; */
-
-/*     // Priority queue for storing points and errors */
-/*     PriorityQueue* q = makeQueue(); */
-    
-/*     // Compute errors of all remaining grid points */
-/*     for (row = 0; row < g->rows; row++) { */
-/*         for (col = 0; col < g->cols; col++) { */
-/*             if (get(g, row, col) != g->NODATA_value) { */
-/*                 Vertex v = (Vertex *) malloc(sizeof(Vertex)); */
-/*                 v->row = row; */
-/*                 v->col = col; */
-/*                 v->value = g->values[row][col]; */
-
-/*                 int error = computeErrorInitialConfig(tin, g, row, col); */
-/*                 Node* n = makeNode(error, (void *)v); */
-/*                 insert(q, n); */
-/*             } */
-/*         } */
-/*     } */
-    
-/*     Node* maxErrorNode = removeTop(p); */
-/*     while (maxErrorNode->priority > epsilon) { */
-/*         // Find point with largest error */
-/*         Vertex* maxErrorVertex = (Vertex *)maxErrorNode->item; */
-
-/*         // Add largest error point to TIN */
-/*         // TODO implement findTriangleContainingVertex */
-/*         // TODO when will seg faults happen? */
-/*         // TODO double check the logic */
-/*         Triangle* containsLargestErrorVertex = findTriangleContainingVertex(&tin, largestErrorVertex); */
-/*         // TODO doesn't need to loop thru TIN */
-
-/*         Triangle* newT1 = (Triangle *) malloc(sizeof(Triangle)); */
-/*         Triangle* newT2 = (Triangle *) malloc(sizeof(Triangle)); */
-/*         Triangle* newT3 = (Triangle *) malloc(sizeof(Triangle)); */
-
-/*         // Initialize newT1 */
-/*         newT1->v1 = maxErrorVertex; */
-/*         newT1->v2 = containsLargestErrorVertex->v1; */
-/*         newT1->v3 = containsLargestErrorVertex->v2; */
-
-/*         containsLargestErrorVertex->t1->t1 = newT1; // TODO check assumption that t->t1->t1 == t  */
-/*         newT1->t1 = containsLargestErrorVertex->t1; */
-/*         newT1->t2 = newT2; */
-/*         newT1->t3 = newT3; */
-
-/*         // Initialize newT2 */
-/*         newT2->v1 = maxErrorVertex; */
-/*         newT2->v2 = containsLargestErrorVertex->v2; */
-/*         newT2->v3 = containsLargestErrorVertex->v3; */
-
-/*         containsLargestErrorVertex->t2->t2 = newT2; */
-/*         newT2->t1 = newT1; */
-/*         newT2->t2 = containsLargestErrorVertex->t2; */
-/*         newT2->t3 = newT3; */
-
-/*         // Initialize newT3 */
-/*         newT3->v1 = maxErrorVertex; */
-/*         newT3->v2 = containsLargestErrorVertex->v1; */
-/*         newT3->v3 = containsLargestErrorVertex->v3; */
-
-/*         containsLargestErrorVertex->t3->t3 = newT3; */
-/*         newT3->t1 = newT1; */
-/*         newT3->t2 = newT2; */
-/*         newT3->t3 = containsLargestErrorVertex->t3; */
-
-/*         tin->triangle = newT1; */
-/*         free(containsLargestErrorVertex); */
-
-/*         // Compute errors of all points whose errors have changed */
-/*         // TODO */
-
-/*         // Set maxError to the error of the vertex with highest error in q */
-/*         maxErrorNode = removeTop(p); */
-/*     } */
-    
-/*     return tin; */
-/* } */
+    return (-crossx*col - crossy*row - d) / crossz;
+}
 
 void splitTriangle(Triangle* t, Triangle** t1, Triangle** t2, Triangle** t3)
 {
   Vertex* newVertex = removeTop(t->points);
 
+  // The new *children* triangles
   Triangle* newT1 = makeTriangleFromVertices(t->v1, t->v2, newVertex);
   Triangle* newT2 = makeTriangleFromVertices(newVertex, t->v2, t->v3);
   Triangle* newT3 = makeTriangleFromVertices(t->v1, newVertex, t->v3);
 
-  // sets outside triangles
+  // links to outside triangles
   newT1->t1 = t->t1;
   newT2->t2 = t->t2;
   newT3->t3 = t->t3;
 
-  // sibling triangles
+  // links to sibling triangles
   newT1->t2 = newT2;
   newT1->t3 = newT3;
 
@@ -231,7 +141,7 @@ void splitTriangle(Triangle* t, Triangle** t1, Triangle** t2, Triangle** t3)
   newT3->t1 = newT1;
   newT3->t2 = newT2;
 
-  // Setting outside triangles
+  // Link outside triangles to new triangles
   if(t->t1 != NULL){
     t->t1->t1 = newT1;
   }
@@ -242,9 +152,10 @@ void splitTriangle(Triangle* t, Triangle** t1, Triangle** t2, Triangle** t3)
     t->t3->t3 = newT3;
   }
 
+  // Want to loop throught all trianges in old triangle and
+  // sort into appropriate new triangles
   Vertex* temp = removeTop(t->points);
   int error = 0;
-
   while(temp != NULL){
     if(triangleContains(newT1, temp)){
       addItem(newT1->points, error, temp);
@@ -266,9 +177,12 @@ void splitTriangle(Triangle* t, Triangle** t1, Triangle** t2, Triangle** t3)
     temp = removeTop(t->points);
   }
 
+  // Free the memory from old triangle that isn't useful anymore
   deleteQueue(t->points);
+  // And then the actual triangle
   free(t);
 
+  // Pass new triangles to calling function
   (*t1) = newT1;
   (*t2) = newT2;
   (*t3) = newT3;
@@ -299,13 +213,13 @@ void triangulate(Triangle* t, double epsilon)
 
 // The main method
 // TODO
-int main(int argc, char** args) {
-    
-    //float epsilon = 0.0; //take from command line - TBU
-    
+int main(int argc, char** args) 
+{
+    float epsilon = 0.0; //take from command line - TBU
+
     //TIN tin;
     Grid imageGrid;
-    
+
     //allocate blocks of memory for image data
     imageGrid.data = (int**) malloc(imageGrid.rows * sizeof(int*));
     if (imageGrid.data == NULL) {
@@ -319,15 +233,15 @@ int main(int argc, char** args) {
             exit(1);
         }
     }
-    
+
     //call simplification method
     //TIN imageTIN = simplify(&tin, &imageGrid, epsilon);
-    
+
     //free memory blocks allocated for image grid
     for (int i = 0; i < imageGrid.rows; i++)
         free(imageGrid.data[i]);
     free(imageGrid.data);
-    
+
     //done
     return 0;
 }

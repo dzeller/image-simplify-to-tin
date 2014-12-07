@@ -3,6 +3,8 @@
 //Date: 11/09/14
 
 #include "simplification.h"
+#include "Display.h"
+#include "structs.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -140,7 +142,6 @@ double calcError(Triangle* t, Vertex* v)
 void splitTriangle(Triangle* t, Triangle** t1, Triangle** t2, Triangle** t3)
 {
   Vertex* newVertex = removeTop(t->points);
-
   // The new *children* triangles
   Triangle* newT1 = makeTriangleFromVertices(t->v1, t->v2, newVertex);
   Triangle* newT2 = makeTriangleFromVertices(newVertex, t->v2, t->v3);
@@ -181,17 +182,14 @@ void splitTriangle(Triangle* t, Triangle** t1, Triangle** t2, Triangle** t3)
     if(triangleContains(newT1, temp)){
       error = calcError(newT1, temp);
       addItem(newT1->points, error, temp);
-      continue;
     }
     else if(triangleContains(newT2, temp)){
       error = calcError(newT2, temp);
       addItem(newT2->points, error, temp);
-      continue;
     }
     else if(triangleContains(newT3, temp)){
       error = calcError(newT3, temp);
       addItem(newT3->points, error, temp);
-      continue;
     }
     else{
       // If this is happening something is broken
@@ -212,17 +210,17 @@ void splitTriangle(Triangle* t, Triangle** t1, Triangle** t2, Triangle** t3)
   (*t3) = newT3;
 }
 
-void triangulate(Triangle* t, double epsilon)
+Triangle* triangulate(Triangle* t, double epsilon)
 {
   // No points within triangle..
-  if(t->points->size == 0) return;
+  if(t->points->size == 0) return NULL;
 
   Vertex* maxErrorPoint = t->points->array[0]->item;
 
   // TODO: we need an error function
   double error = calcError(t, maxErrorPoint);
   //all points within triangle are below epsilon
-  if(error < epsilon) return;
+  if(error < epsilon) return NULL;
 
   Triangle* t1;
   Triangle* t2;
@@ -233,6 +231,8 @@ void triangulate(Triangle* t, double epsilon)
   triangulate(t1, epsilon);
   triangulate(t2, epsilon);
   triangulate(t3, epsilon);
+
+  return t1;
 }
 
 void preTriangulate(Grid* g, double epsilon)
@@ -283,14 +283,16 @@ void preTriangulate(Grid* g, double epsilon)
   printf("Pretriangulation done\n");
   triangulate(one, epsilon);
   printf("Triangulated the first one\n");
-  triangulate(two, epsilon);
+  Triangle* t = triangulate(two, epsilon);
+
+  displayTriangles(t, g->cols, g->rows);
 }
 
 // The main method
 // TODO
 int main(int argc, char** args)
 {
-    float epsilon = 0.0; //take from command line - TBU
+  //float epsilon = 0.0; //take from command line - TBU
 
     //TIN tin;
     Grid* imageGrid = readGrid("puppy.txt");

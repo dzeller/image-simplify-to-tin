@@ -237,8 +237,8 @@ void assertHeap(PriorityQueue* p)
 /*   Node* n; */
 
 /*   printf("Building the queue\n"); */
-/*   for(int i=0; i<10; i++){ */
-/*     //n = makeNode(rand()%10000, (void*)0); */
+/*   for(int i=0; i<1000000; i++){ */
+/*     n = makeNode(rand()%10000, (void*)0); */
 /*     addItem(p, 10-i, n); */
 /*     //insert(p, n); */
 /*     assertHeap(p); */
@@ -256,10 +256,13 @@ void assertHeap(PriorityQueue* p)
 /*   changePriority(p, 8, 100); */
 /*   assertHeap(p); */
 /*   printQueuePriorities(p); */
-
+/*   printf("queue built\n"); */
 /*   while(removeTop(p) != NULL); */
 
+/*   printf("removed all values\n"); */
+/*   for(int i=0; i<10000; i++); */
 /*   printf("Deleting the queue\n"); */
 /*   deleteQueue(p); */
+/*   while(1); */
 /*   return 0; */
 /* } */

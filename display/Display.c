@@ -8,6 +8,7 @@
 #endif
 
 #include "Display.h"
+#include "llist.h"
 
 LList* list;
 double imageAspectRatio;

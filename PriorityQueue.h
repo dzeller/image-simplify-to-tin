@@ -1,16 +1,18 @@
 #pragma once
 
-typedef struct node_ {
-    double priority;
-    void* item;
-} Node;
+#include "structs.h"
 
-typedef struct pQueue_ {
-    Node** array;
-    int arraySize;
+// typedef struct node_ {
+//     double priority;
+//     void* item;
+// } Node;
 
-    int size;
-} PriorityQueue;
+// typedef struct pQueue_ {
+//     Node** array;
+//     int arraySize;
+
+//     int size;
+// } PriorityQueue;
 
 PriorityQueue* makeQueue();
 

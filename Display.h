@@ -1,7 +1,7 @@
 #pragma once
 
 // #include "llist.h"
-
+#include "structs.h"
 
 // //#include "../simplification.h" // using this definition of a Triangle
 // typedef struct _vertex {

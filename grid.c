@@ -1,111 +1,152 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include "viewshed.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include "grid.h"
+#include "assert.h"
 
-int allocateGrid(Grid* grid, int nrows, int ncols)
+// Takes a string filename and a pointer to an non-malloc'd grid pointer
+Grid* readGrid(char* filename)
 {
-    int i;
+  FILE* f;
+  char line[100];
+  int nrows, ncols; //, xll, yll, cellsize;
+  //float noData;
 
-    if ((grid->values = malloc(nrows*sizeof(int *))) == NULL)
-        return 0;
-    for (i = 0; i < nrows; i++) {
-        if ((grid->values[i] = malloc(ncols*sizeof(int))) == NULL)
-            return 0;
+  f=fopen(filename, "r");
+  if (f==NULL) {
+    printf("No file with that name found\n");
+    exit(1);
+  }
+
+  fscanf(f, "%s%d", line, &ncols);
+  fscanf(f, "%s%d", line, &nrows);
+
+  Grid* grid = malloc(sizeof(Grid));
+  grid->rows = nrows/3;
+  grid->cols = ncols/3;
+
+  /* fscanf(f, "%s%d", line, &xll); */
+  /* fscanf(f, "%s%d", line, &yll); */
+  /* fscanf(f, "%s%d", line, &cellsize); */
+  /* fscanf(f, "%s%f", line, &noData); */
+
+  /* grid->xlowerLeft = xll; */
+  /* grid->ylowerLeft = yll; */
+  /* grid->cellsize = cellsize; */
+  /* grid->noData = noData; */
+
+  grid->data = malloc(nrows*sizeof(float*));
+  assert(grid->data);
+
+  int i = 0;
+  while(i < nrows) {
+    grid->data[i] = malloc(ncols*sizeof(float));
+    assert(grid->data[i]);
+    i++;
+  }
+
+  i = 0;
+  int j = 0;
+
+  while(i < grid->rows){
+    while(j < grid->cols){
+      float value = 0;
+      int r, g, b;
+      fscanf(f, "%d", &r);
+      fscanf(f, "%d", &g);
+      fscanf(f, "%d", &b);
+      value = 0.2126*r + 0.7152*g + 0.0722*b;
+
+      grid->data[i][j] = value;
+      j++;
     }
+    i++;
+    j = 0;
+  }
 
-    return 1;
+  fclose(f);
+  printf("read in file\n");
+  return grid;
+ }
+
+void writeGrid(char* filename, Grid* toWrite)
+{
+  FILE* f;
+
+  f = fopen(filename, "w+");
+  assert(f);
+
+  fprintf(f, "ncols %d\n", toWrite->cols);
+  fprintf(f, "nrows %d\n", toWrite->rows);
+  fprintf(f, "xllcorner %d\n", toWrite->xlowerLeft);
+  fprintf(f, "yllcorner %d\n", toWrite->ylowerLeft);
+  fprintf(f, "cellsize %d\n", toWrite->cellsize);
+  fprintf(f, "NODATA_value %f\n", toWrite->noData);
+
+  int i = 0;
+  int j = 0;
+  while(i < toWrite->rows){
+    while(j < toWrite->cols){
+      fprintf(f, "%f ", toWrite->data[i][j]);
+      j++;
+    }
+    fprintf(f, "\n");
+    i++;
+    j = 0;
+  }
+
+  fclose(f);
 }
 
-void freeGrid(Grid* grid)
+void freeGrid(Grid** grid)
 {
-    int i;
-
-    for (i = 0; i < grid->nrows; i++) {
-        free(grid->values[i]);
-    }
-    free(grid->values);
-}
-
-int readFileIntoGrid(Grid* grid, char* filename)
-{
-    int i, j;
-    char buffer[99600];
-
-    FILE* f;
-    if ((f = fopen(filename, "r")) == NULL)
-        return 0;
-
-    grid->ncols = 332; // TODO shouldn't be hard coded
-    grid->nrows = 300;
-    if (!allocateGrid(grid, grid->nrows, grid->ncols))
-        return 0;
-
-    for (i = 0; i < grid.nrows; i++) {
-        for (j = 0; j < grid.ncols; j++) {
-            grid->values[i][j] = fgetc(f);
-        }
-    }
-
-    return 1;
-}
-
-int saveGridToFile(Grid* grid, char* filename)
-{
-    int i, j;
-
-    FILE* f;
-    if ((f = fopen(filename, "w")) == NULL)
-        return 0;
-
-    fprintf(f, "ncols %d\n", grid->ncols);
-    fprintf(f, "nrows %d\n", grid->nrows);
-    fprintf(f, "xllcorner %d\n", grid->xllcorner);
-    fprintf(f, "yllcorner %d\n", grid->yllcorner);
-    fprintf(f, "cellsize %d\n", grid->cellsize);
-    fprintf(f, "NODATA_value %d\n", grid->NODATA_value);
-
-    for (i = 0; i < grid->nrows; i++) {
-        for (j = 0; j < grid->ncols; j++) {
-            fprintf(f, "%d ", grid->values[i][j]);
-        }
-        fprintf(f, "\n");
-    }
-
-    freeGrid(grid);
-    return 1;
-}
-
-void copyGridHeader(Grid* to, Grid* from)
-{
-    to->ncols = from->ncols;
-    to->nrows = from->nrows;
-    to->xllcorner = from->xllcorner;
-    to->yllcorner = from->yllcorner;
-    to->cellsize = from->cellsize;
-    to->NODATA_value = from->NODATA_value;
+  Grid* freeGrid = *grid;
+  
+  for(int i=0; i<freeGrid->rows; i++){
+    free(freeGrid->data[i]);
+  }
+  free(freeGrid->data);
+  free(freeGrid);
+  *grid = NULL;
 }
 
 void printGrid(Grid* grid)
 {
-    int i, j;
+  int i = 0;
+  int j = 0;
 
-    printf("Printing grid with %d cols and %d rows.\n", grid->ncols, grid->nrows);
-    for (i = 0; i < grid->nrows; i++) {
-        for (j = 0; j < grid->ncols; j++) {
-            printf("%d ", grid->values[i][j]);
-        }
-        printf("\n");
+  while(i < grid->rows){
+    while(j < grid->cols){
+      printf("%f ", grid->data[i][j]);
+      j++;
     }
+    i++;
+    j=0;
+    printf("\n");
+  }
 }
 
-int inBoundsOnGrid(Grid* grid, int i, int j)
-{
-    return (i >= 0 && j >= 0 && i < grid->nrows && j < grid->ncols);
-}
 
-int noDataAtPoint(Grid* grid, int i, int j)
+void assertEquality(Grid* one, Grid* two)
 {
-    return (grid->NODATA_value == grid->values[i][j]);
+  printf("%d %d\n", one->cols, two->cols);
+  printf("%d %d\n", one->rows, two->rows);
+  assert(one->cols == two->cols);
+  assert(one->rows == two->rows);
+  assert(one->xlowerLeft == two->xlowerLeft);
+  assert(one->ylowerLeft == two->ylowerLeft);
+  assert(one->cellsize == two->cellsize);
+  assert(one->noData == two->noData);
+
+  int y = 0;
+  int x = 0;
+
+  while(y < one->rows){
+    while(x < one->cols){
+      assert(one->data[y][x] == two->data[y][x]);
+      x++;
+    }
+    y++;
+    x=0;
+  }
+  printf("the grids are equivalent\n");
 }

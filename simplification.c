@@ -60,6 +60,15 @@ Triangle* makeTriangleFromVertices(Vertex* v1, Vertex* v2, Vertex* v3)
   return t;
 }
 
+Vertex* makeVertex(Grid* g, int row, int col)
+{
+  Vertex* v = malloc(sizeof(Vertex));
+  v->row = row;
+  v->col = col;
+  v->value = get(g, row, col);
+  return v;
+}
+
 /* void initializeTriangle(Triangle *t, Grid* g, int row1, int col1, int row2, int col2, int row3, int col3) { */
 /*     // First vertex */
 /*     t.triangle.v1 = (Vertex *) malloc(sizeof(Vertex)); */
@@ -117,6 +126,17 @@ double linearlyInterpolate(Vertex* a, Vertex* b, Vertex* c, int row, int col)
     return (-crossx*col - crossy*row - d) / crossz;
 }
 
+double calcError(Triangle* t, Vertex* v)
+{
+  Vertex* v1 = t->v1;
+  Vertex* v2 = t->v2;
+  Vertex* v3 = t->v3;
+
+  double fromTin = linearlyInterpolate(v1, v2, v3, v->row, v->col);
+
+  return abs(fromTin - v->value);
+}
+
 void splitTriangle(Triangle* t, Triangle** t1, Triangle** t2, Triangle** t3)
 {
   Vertex* newVertex = removeTop(t->points);
@@ -155,17 +175,21 @@ void splitTriangle(Triangle* t, Triangle** t1, Triangle** t2, Triangle** t3)
   // Want to loop throught all trianges in old triangle and
   // sort into appropriate new triangles
   Vertex* temp = removeTop(t->points);
-  int error = 0;
+  double error;
+
   while(temp != NULL){
     if(triangleContains(newT1, temp)){
+      error = calcError(newT1, temp);
       addItem(newT1->points, error, temp);
       continue;
     }
     else if(triangleContains(newT2, temp)){
+      error = calcError(newT2, temp);
       addItem(newT2->points, error, temp);
       continue;
     }
     else if(triangleContains(newT3, temp)){
+      error = calcError(newT3, temp);
       addItem(newT3->points, error, temp);
       continue;
     }
@@ -193,10 +217,10 @@ void triangulate(Triangle* t, double epsilon)
   // No points within triangle..
   if(t->points->size == 0) return;
 
-  //Vertex* maxErrorPoint = t->points->array[0]->item;
+  Vertex* maxErrorPoint = t->points->array[0]->item;
 
   // TODO: we need an error function
-  double error = 0;
+  double error = calcError(t, maxErrorPoint);
   //all points within triangle are below epsilon
   if(error < epsilon) return;
 
@@ -211,36 +235,72 @@ void triangulate(Triangle* t, double epsilon)
   triangulate(t3, epsilon);
 }
 
+void preTriangulate(Grid* g, double epsilon)
+{
+  Vertex* v1 = makeVertex(g, 0, 0);
+  Vertex* v2 = makeVertex(g, g->rows - 1, 0);
+  Vertex* v3 = makeVertex(g, 0, g->cols - 1);
+  Vertex* v4 = makeVertex(g, g->rows - 1, g->cols - 1);
+
+  Triangle* one = makeTriangleFromVertices(v1, v2, v4);
+  Triangle* two = makeTriangleFromVertices(v1, v3, v4);
+
+  one->t3 = two;
+  two->t3 = one;
+
+  one->points = makeQueue();
+  two->points = makeQueue();
+
+  Vertex* tempV;
+  double tempE;
+
+  for(int row=0; row < g->rows; row++){
+    for(int col=0; col < g->cols; col++){
+      // Ignore the four corner vertices. Ugly Ugly Ugly
+      if((row==0 && col==0) ||
+	 (row==0 && col==(g->cols-1)) ||
+	 (row==(g->rows-1) && col==0) ||
+	 (row==(g->rows-1) && col==(g->cols-1))){
+	continue;
+      }
+
+      tempV = makeVertex(g, row, col);
+
+      if(triangleContains(one, tempV)){
+	tempE = calcError(one, tempV);
+	addItem(one->points, tempE, (void*)tempV);
+      }
+      else if(triangleContains(two, tempV)){
+	tempE = calcError(two, tempV);
+	addItem(two->points, tempE, (void*)tempV);
+      }
+      else{
+	printf("Bad things happening..\n");
+	assert(0);
+      }
+    }
+  }
+  printf("Pretriangulation done\n");
+  triangulate(one, epsilon);
+  printf("Triangulated the first one\n");
+  triangulate(two, epsilon);
+}
+
 // The main method
 // TODO
-int main(int argc, char** args) 
+int main(int argc, char** args)
 {
     float epsilon = 0.0; //take from command line - TBU
 
     //TIN tin;
-    Grid imageGrid;
+    Grid* imageGrid = readGrid("puppy.txt");
 
-    //allocate blocks of memory for image data
-    imageGrid.data = (int**) malloc(imageGrid.rows * sizeof(int*));
-    if (imageGrid.data == NULL) {
-        printf("Could not allocate array.");
-        exit(1);
-    }
-    for (int i = 0; i < imageGrid.rows; i++) {
-        imageGrid.data[i] = (int*) malloc(imageGrid.cols * sizeof(int));
-        if (imageGrid.data[i] == NULL) {
-            printf("Could not allocate array.");
-            exit(1);
-        }
-    }
-
+    preTriangulate(imageGrid, 50);
     //call simplification method
     //TIN imageTIN = simplify(&tin, &imageGrid, epsilon);
 
     //free memory blocks allocated for image grid
-    for (int i = 0; i < imageGrid.rows; i++)
-        free(imageGrid.data[i]);
-    free(imageGrid.data);
+    freeGrid(&imageGrid);
 
     //done
     return 0;

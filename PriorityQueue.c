@@ -20,7 +20,7 @@ PriorityQueue* makeQueue(){
   return out;
 }
 
-Node* makeNode(int priority, void* item)
+Node* makeNode(double priority, void* item)
 {
   Node* out = malloc(sizeof(Node));
 
@@ -41,7 +41,7 @@ void deleteQueue(PriorityQueue* p)
   free(p);
 }
 
-void addItem(PriorityQueue* p, int priority, void* item)
+void addItem(PriorityQueue* p, double priority, void* item)
 {
   insert(p, makeNode(priority, item));
 }
@@ -58,7 +58,7 @@ void insert(PriorityQueue* p, Node* node)
   siftUp(p, p->size-1);
 }
 
-void changePriority(PriorityQueue* p, int index, int newPriority)
+void changePriority(PriorityQueue* p, int index, double newPriority)
 {
   int diff = newPriority - p->array[index]->priority;
   p->array[index]->priority = newPriority;
@@ -204,7 +204,7 @@ void printQueuePriorities(PriorityQueue* p)
   for(int i=0; i<p->size; i++){
     Node* n = p->array[i];
 
-    printf("     Priority: %d\n", n->priority);
+    printf("     Priority: %f\n", n->priority);
   }
   printf("______-----------______\n");
 }

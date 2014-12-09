@@ -234,7 +234,7 @@ Triangle* triangulate(Triangle* t, double epsilon)
 
   return t1;
 }
-
+void assertTIN(Triangle* t);
 void preTriangulate(Grid* g, double epsilon)
 {
   Vertex* v1 = makeVertex(g, 0, 0);
@@ -283,9 +283,31 @@ void preTriangulate(Grid* g, double epsilon)
   printf("Pretriangulation done\n");
   triangulate(one, epsilon);
   printf("Triangulated the first one\n");
-  Triangle* t = triangulate(two, epsilon);
+  triangulate(two, epsilon);
 
+  Triangle* t = one;
+
+  //assertTIN(t);
   displayTriangles(t, g->cols, g->rows);
+}
+
+void assertTIN(Triangle* t)
+{
+  if(t == NULL ||t->visited) return;
+  if(t->t1 != NULL)
+    assert(t == t->t1->t1);
+  if(t->t2 != NULL)
+    assert(t == t->t2->t2);
+  if(t->t3 != NULL)
+    assert(t == t->t3->t3);
+
+  printf("This one is good\n");
+  t->visited = 1;
+
+  assertTIN(t->t1);
+  assertTIN(t->t2);
+  assertTIN(t->t3);
+  t->visited = 0;
 }
 
 // The main method
@@ -294,15 +316,32 @@ int main(int argc, char** args)
 {
   //float epsilon = 0.0; //take from command line - TBU
 
+
     //TIN tin;
     Grid* imageGrid = readGrid("puppy.txt");
+    Vertex* v1 = makeVertex(imageGrid, 0, 0);
+    Vertex* v2 = makeVertex(imageGrid, 0, 100);
+    Vertex* v3 = makeVertex(imageGrid, 100, 100);
 
-    preTriangulate(imageGrid, 50);
+    Vertex* v4 = makeVertex(imageGrid, 25, 50);
+
+    Triangle* t = makeTriangleFromVertices(v1, v2, v3);
+
+    addItem(t->points, 50, v4);
+
+    Triangle* t1;
+    Triangle* t2;
+    Triangle* t3;
+
+    splitTriangle(t, &t1, &t2, &t3);
+
+    //displayTriangles(t1, imageGrid->cols, imageGrid->rows);
+    preTriangulate(imageGrid, 121);
     //call simplification method
     //TIN imageTIN = simplify(&tin, &imageGrid, epsilon);
 
     //free memory blocks allocated for image grid
-    freeGrid(&imageGrid);
+  //freeGrid(&imageGrid);
 
     //done
     return 0;

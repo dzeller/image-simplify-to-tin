@@ -108,6 +108,7 @@ void renderScene(void)
 
   buildMapping(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 
+
   // Paint white backdrop
   glColor3f(1.0, 1.0, 1.0);
   glBegin(GL_QUADS);
@@ -125,29 +126,33 @@ void renderScene(void)
     Vertex* v = t->v1;
     glBegin(GL_TRIANGLES);
 
-    //glColor3f(c->r, c->g, c->b);
-    //glVertex3f(mapX(p->x), mapY(p->y), 0.0);
     glColor3f(v->value/max, v->value/max, v->value/max);
     glVertex3f(mapX(v->col), mapY(v->row), 0.0);
 
-    //c = node->twoC;
-    //p = node->twoP;
     v = t->v2;
-
-    //glColor3f(c->r, c->g, c->b);
-    //glVertex3f(mapX(p->x), mapY(p->y), 0.0);
     glColor3f(v->value/max, v->value/max, v->value/max);
     glVertex3f(mapX(v->col), mapY(v->row), 0.0);
 
-    //c = node->threeC;
-    //p = node->threeP;
     v = t->v3;
-
-    //glColor3f(c->r, c->g, c->b);
-    //glVertex3f(mapX(p->x), mapY(p->y), 0.0);
     glColor3f(v->value/max, v->value/max, v->value/max);
     glVertex3f(mapX(v->col), mapY(v->row), 0.0);
 
+    glColor3f(1.0, 0, 0);
+    glEnd();
+
+    glBegin(GL_LINES);
+    glVertex3f(mapX(t->v1->col), mapY(t->v1->row), 0);
+    glVertex3f(mapX(t->v2->col), mapY(t->v2->row), 0);
+    glEnd();
+
+    glBegin(GL_LINES);
+    glVertex3f(mapX(t->v1->col), mapY(t->v1->row), 0);
+    glVertex3f(mapX(t->v3->col), mapY(t->v3->row), 0);
+    glEnd();
+
+    glBegin(GL_LINES);
+    glVertex3f(mapX(t->v2->col), mapY(t->v2->row), 0);
+    glVertex3f(mapX(t->v3->col), mapY(t->v3->row), 0);
     glEnd();
 
     node = node->next;
